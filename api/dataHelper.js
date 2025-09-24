@@ -6,6 +6,7 @@ let globalData = {
     submissionCounter: 0
 };
 
+// Use /tmp for Vercel, but handle errors gracefully
 const dataFile = path.join('/tmp', 'submissions.json');
 
 async function loadData() {
@@ -15,8 +16,8 @@ async function loadData() {
         globalData.submissions = parsed.submissions || [];
         globalData.submissionCounter = parsed.submissionCounter || 0;
     } catch (error) {
-        // File doesn't exist, use in-memory data
-        console.log('Using in-memory storage');
+        // File doesn't exist or can't be read, use in-memory data
+        console.log('Using in-memory storage:', error.message);
     }
 }
 
@@ -29,7 +30,8 @@ async function saveData() {
         };
         await fs.writeFile(dataFile, JSON.stringify(data, null, 2));
     } catch (error) {
-        console.error('Error saving data:', error);
+        // If we can't write to file, continue with in-memory only
+        console.log('Could not save to file, using in-memory only:', error.message);
     }
 }
 

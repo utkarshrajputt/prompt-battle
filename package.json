@@ -1,0 +1,22 @@
+{
+  "name": "prompt-battle-royale",
+  "private": true,
+  "version": "1.0.0",
+  "type": "commonjs",
+  "description": "Live workshop activity for Prompt Battle Royale",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": [
+    "workshop",
+    "prompts",
+    "battle-royale",
+    "education"
+  ],
+  "author": "Workshop Facilitator"
+}

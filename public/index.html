@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Battle Royale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-trophy"></i>
+                    <h1>Prompt Battle Royale</h1>
+                </div>
+                <p class="subtitle">Submit Your Most Creative Prompt</p>
+                <div class="stats-bar">
+                    <div class="stat-item">
+                        <i class="fas fa-paper-plane"></i>
+                        <span class="stat-label">Total Submissions</span>
+                        <span id="submission-counter" class="stat-value">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Submission Form -->
+        <section class="submission-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-edit"></i>
+                    <h2>Submit Your Prompt</h2>
+                </div>
+                <form id="submission-form">
+                    <div class="form-group">
+                        <label for="name">
+                            <i class="fas fa-user"></i>
+                            Your Name (Optional)
+                        </label>
+                        <input type="text" id="name" placeholder="Enter your name or stay anonymous" maxlength="50" class="form-input">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="prompt">
+                            <i class="fas fa-lightbulb"></i>
+                            Your Prompt *
+                        </label>
+                        <textarea 
+                            id="prompt" 
+                            class="form-textarea"
+                            placeholder="Write your most creative prompt here..." 
+                            rows="4" 
+                            maxlength="500" 
+                            required
+                        ></textarea>
+                        <div class="char-counter">
+                            <span id="char-count">0</span>/500 characters
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-rocket"></i>
+                        Submit Prompt
+                    </button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Top 3 Prompts Section -->
+        <section class="top3-section" id="top3-section" style="display: none;">
+            <div class="card card-gold">
+                <div class="card-header">
+                    <i class="fas fa-crown"></i>
+                    <h2>🏆 Top 3 Most Voted Prompts</h2>
+                </div>
+                <div id="top3-list" class="top3-list">
+                    <!-- Top 3 prompts will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Live Submissions Section -->
+        <section class="submissions-section">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-list"></i>
+                    <h2>Live Submissions</h2>
+                    <button id="download-csv-btn" class="btn btn-success btn-sm">
+                        <i class="fas fa-download"></i>
+                        Download CSV
+                    </button>
+                </div>
+                <div class="submissions-info">
+                    <p class="info-text">
+                        <i class="fas fa-heart"></i>
+                        Click the upvote button to vote for your favorite prompts!
+                    </p>
+                </div>
+                <div id="submissions-list" class="submissions-list">
+                    <div class="no-submissions">
+                        <i class="fas fa-inbox"></i>
+                        <p>No submissions yet. Be the first to submit!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast">
+        <i class="toast-icon"></i>
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

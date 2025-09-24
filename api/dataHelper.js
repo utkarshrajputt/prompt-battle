@@ -40,7 +40,8 @@ async function addSubmission(name, prompt) {
         name: name && name.trim() ? name.trim() : 'Anonymous',
         prompt: prompt.trim(),
         timestamp: new Date().toISOString(),
-        votes: 0
+        votes: 0,
+        votedUsers: [] // Track which users have voted
     };
     
     globalData.submissions.push(submission);
@@ -48,14 +49,49 @@ async function addSubmission(name, prompt) {
     return submission;
 }
 
-async function voteForSubmission(id) {
+async function toggleVote(id, userId) {
     await loadData();
     const submission = globalData.submissions.find(s => s.id === id);
     if (!submission) return null;
     
-    submission.votes++;
+    // Initialize votedUsers array if it doesn't exist (for backward compatibility)
+    if (!submission.votedUsers) {
+        submission.votedUsers = [];
+    }
+    
+    const userIndex = submission.votedUsers.indexOf(userId);
+    
+    if (userIndex === -1) {
+        // User hasn't voted, add their vote
+        submission.votedUsers.push(userId);
+        submission.votes++;
+    } else {
+        // User has voted, remove their vote
+        submission.votedUsers.splice(userIndex, 1);
+        submission.votes--;
+    }
+    
     await saveData();
-    return submission;
+    return {
+        submission,
+        hasVoted: userIndex === -1 // true if they just voted, false if they just unvoted
+    };
+}
+
+async function deleteSubmission(id) {
+    await loadData();
+    const index = globalData.submissions.findIndex(s => s.id === id);
+    if (index === -1) return false;
+    
+    globalData.submissions.splice(index, 1);
+    await saveData();
+    return true;
+}
+
+function hasUserVoted(submissionId, userId) {
+    const submission = globalData.submissions.find(s => s.id === submissionId);
+    if (!submission || !submission.votedUsers) return false;
+    return submission.votedUsers.includes(userId);
 }
 
 function getSubmissions() {
@@ -73,7 +109,9 @@ function getTotal() {
 
 module.exports = {
     addSubmission,
-    voteForSubmission,
+    toggleVote,
+    deleteSubmission,
+    hasUserVoted,
     getSubmissions,
     getTop3,
     getTotal,

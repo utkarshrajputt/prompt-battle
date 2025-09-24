@@ -55,7 +55,8 @@ class DataStore {
             name: name && name.trim() ? name.trim() : 'Anonymous',
             prompt: prompt.trim(),
             timestamp: new Date().toISOString(),
-            votes: 0
+            votes: 0,
+            votedUsers: [] // Track which users have voted
         };
         
         this.submissions.push(submission);
@@ -63,15 +64,47 @@ class DataStore {
         return submission;
     }
 
-    async voteForSubmission(id) {
+    async toggleVote(id, userId) {
         const submission = this.submissions.find(s => s.id === id);
-        if (!submission) {
-            return null;
+        if (!submission) return null;
+        
+        // Initialize votedUsers array if it doesn't exist (for backward compatibility)
+        if (!submission.votedUsers) {
+            submission.votedUsers = [];
         }
         
-        submission.votes++;
+        const userIndex = submission.votedUsers.indexOf(userId);
+        
+        if (userIndex === -1) {
+            // User hasn't voted, add their vote
+            submission.votedUsers.push(userId);
+            submission.votes++;
+        } else {
+            // User has voted, remove their vote
+            submission.votedUsers.splice(userIndex, 1);
+            submission.votes--;
+        }
+        
         await this.saveData();
-        return submission;
+        return {
+            submission,
+            hasVoted: userIndex === -1 // true if they just voted, false if they just unvoted
+        };
+    }
+
+    async deleteSubmission(id) {
+        const index = this.submissions.findIndex(s => s.id === id);
+        if (index === -1) return false;
+        
+        this.submissions.splice(index, 1);
+        await this.saveData();
+        return true;
+    }
+
+    hasUserVoted(submissionId, userId) {
+        const submission = this.submissions.find(s => s.id === submissionId);
+        if (!submission || !submission.votedUsers) return false;
+        return submission.votedUsers.includes(userId);
     }
 
     getSubmissions() {

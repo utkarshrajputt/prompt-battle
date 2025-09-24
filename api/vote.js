@@ -1,13 +1,17 @@
-const { voteForSubmission, getTop3 } = require('./dataHelper');
+const { toggleVote, getTop3 } = require('./dataHelper');
 
 export default async function handler(req, res) {
     if (req.method === 'POST') {
-        const { id } = req.body;
+        const { id, userId } = req.body;
+        
+        if (!userId) {
+            return res.status(400).json({ error: 'User ID is required' });
+        }
         
         try {
-            const submission = await voteForSubmission(id);
+            const result = await toggleVote(id, userId);
             
-            if (!submission) {
+            if (!result) {
                 return res.status(404).json({ error: 'Submission not found' });
             }
             
@@ -15,7 +19,8 @@ export default async function handler(req, res) {
             
             res.json({ 
                 success: true, 
-                submission,
+                submission: result.submission,
+                hasVoted: result.hasVoted,
                 top3 
             });
         } catch (error) {

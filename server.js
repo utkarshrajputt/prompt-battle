@@ -17,8 +17,8 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Submit a new prompt
-app.post('/submit', async (req, res) => {
+// Submit a new prompt (handle both /submit and /api/submit)
+app.post(['/submit', '/api/submit'], async (req, res) => {
   const { name, prompt } = req.body;
   
   // Prevent empty submissions
@@ -35,22 +35,26 @@ app.post('/submit', async (req, res) => {
   }
 });
 
-// Get all submissions
-app.get('/submissions', (req, res) => {
+// Get all submissions (handle both /submissions and /api/submissions)
+app.get(['/submissions', '/api/submissions'], (req, res) => {
   res.json({
     submissions: dataStore.getSubmissions(),
     total: dataStore.getTotal()
   });
 });
 
-// Vote for a submission
-app.post('/vote', async (req, res) => {
-  const { id } = req.body;
+// Vote for a submission (handle both /vote and /api/vote)
+app.post(['/vote', '/api/vote'], async (req, res) => {
+  const { id, userId } = req.body;
+  
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
   
   try {
-    const submission = await dataStore.voteForSubmission(id);
+    const result = await dataStore.toggleVote(parseInt(id), userId);
     
-    if (!submission) {
+    if (!result) {
       return res.status(404).json({ error: 'Submission not found' });
     }
     
@@ -58,7 +62,8 @@ app.post('/vote', async (req, res) => {
     
     res.json({ 
       success: true, 
-      submission,
+      submission: result.submission,
+      hasVoted: result.hasVoted,
       top3 
     });
   } catch (error) {
@@ -67,13 +72,40 @@ app.post('/vote', async (req, res) => {
   }
 });
 
-// Get top 3 prompts (based on votes)
-app.get('/top3', (req, res) => {
+// Get top 3 prompts (handle both /top3 and /api/top3)
+app.get(['/top3', '/api/top3'], (req, res) => {
   res.json({ top3: dataStore.getTop3() });
 });
 
-// Download submissions as CSV
-app.get('/download-csv', (req, res) => {
+// Delete a submission (handle both /delete and /api/delete)
+app.delete(['/delete', '/api/delete'], async (req, res) => {
+  console.log('Delete request received:', req.body);
+  const { id } = req.body;
+  
+  if (!id) {
+    return res.status(400).json({ error: 'ID is required' });
+  }
+  
+  try {
+    const success = await dataStore.deleteSubmission(parseInt(id));
+    console.log('Delete result:', success, 'for ID:', id);
+    
+    if (!success) {
+      return res.status(404).json({ error: 'Submission not found' });
+    }
+    
+    res.json({ 
+      success: true, 
+      message: 'Submission deleted successfully'
+    });
+  } catch (error) {
+    console.error('Error deleting submission:', error);
+    res.status(500).json({ error: 'Failed to delete submission' });
+  }
+});
+
+// Download submissions as CSV (handle both /download-csv and /api/download-csv)
+app.get(['/download-csv', '/api/download-csv'], (req, res) => {
   const submissions = dataStore.getSubmissions();
   
   if (submissions.length === 0) {

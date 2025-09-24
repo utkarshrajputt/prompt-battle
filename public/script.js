@@ -14,6 +14,23 @@ const downloadCsvBtn = document.getElementById('download-csv-btn');
 // State
 let submissions = [];
 let top3 = [];
+let userId = null;
+
+// Generate or retrieve user ID
+function getUserId() {
+    if (userId) return userId;
+    
+    // Try to get from localStorage first
+    userId = localStorage.getItem('promptBattle_userId');
+    
+    if (!userId) {
+        // Generate a unique user ID
+        userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('promptBattle_userId', userId);
+    }
+    
+    return userId;
+}
 
 // Character counter for prompt textarea
 promptInput.addEventListener('input', () => {
@@ -123,7 +140,10 @@ async function voteForSubmission(submissionId) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ id: submissionId })
+            body: JSON.stringify({ 
+                id: submissionId,
+                userId: getUserId()
+            })
         });
         
         const data = await response.json();
@@ -133,13 +153,15 @@ async function voteForSubmission(submissionId) {
             const submission = submissions.find(s => s.id === submissionId);
             if (submission) {
                 submission.votes = data.submission.votes;
+                submission.votedUsers = data.submission.votedUsers;
             }
             
             // Re-render submissions and top 3
             renderSubmissions();
             renderTop3();
             
-            showToast('Vote added! 🎉', 'success', 'fas fa-thumbs-up');
+            const voteText = data.hasVoted ? 'Vote added! 🎉' : 'Vote removed! 👍';
+            showToast(voteText, 'success', 'fas fa-thumbs-up');
             
             // Refresh data from server to ensure consistency
             setTimeout(() => loadSubmissions(), 500);
@@ -149,6 +171,38 @@ async function voteForSubmission(submissionId) {
         
     } catch (error) {
         console.error('Error voting:', error);
+        showToast('Network error. Please try again.', 'error', 'fas fa-wifi');
+    }
+}
+
+// Handle deleting a submission
+async function deleteSubmission(submissionId) {
+    if (!confirm('Are you sure you want to delete this prompt? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/delete', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ id: submissionId })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast('Prompt deleted successfully! 🗑️', 'success', 'fas fa-trash');
+            
+            // Refresh submissions
+            await loadSubmissions();
+        } else {
+            showToast(data.error || 'Error deleting prompt', 'error', 'fas fa-exclamation-triangle');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting submission:', error);
         showToast('Network error. Please try again.', 'error', 'fas fa-wifi');
     }
 }
@@ -242,29 +296,42 @@ function renderSubmissions() {
         return;
     }
     
-    submissionsList.innerHTML = submissions.map(submission => `
-        <div class="submission-item" data-id="${submission.id}">
-            <div class="submission-content">
-                <div class="submission-header">
-                    <div class="submission-name">
-                        <i class="fas fa-user"></i>
-                        ${escapeHtml(submission.name)}:
+    const currentUserId = getUserId();
+    
+    submissionsList.innerHTML = submissions.map(submission => {
+        const hasVoted = submission.votedUsers && submission.votedUsers.includes(currentUserId);
+        const voteButtonClass = hasVoted ? 'vote-btn voted' : 'vote-btn';
+        const voteButtonTitle = hasVoted ? 'Click to remove your vote' : 'Click to vote for this prompt';
+        
+        return `
+            <div class="submission-item" data-id="${submission.id}">
+                <div class="submission-content">
+                    <div class="submission-header">
+                        <div class="submission-name">
+                            <i class="fas fa-user"></i>
+                            ${escapeHtml(submission.name)}:
+                        </div>
+                        <div class="submission-time">
+                            <i class="fas fa-clock"></i>
+                            ${formatTime(submission.timestamp)}
+                        </div>
                     </div>
-                    <div class="submission-time">
-                        <i class="fas fa-clock"></i>
-                        ${formatTime(submission.timestamp)}
-                    </div>
+                    <div class="submission-prompt">${escapeHtml(submission.prompt)}</div>
                 </div>
-                <div class="submission-prompt">${escapeHtml(submission.prompt)}</div>
+                <div class="submission-actions">
+                    <div class="vote-section">
+                        <button class="${voteButtonClass}" onclick="voteForSubmission(${submission.id})" title="${voteButtonTitle}">
+                            <i class="fas fa-thumbs-up"></i>
+                        </button>
+                        <div class="vote-count">${submission.votes || 0}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteSubmission(${submission.id})" title="Delete this prompt">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
             </div>
-            <div class="vote-section">
-                <button class="vote-btn" onclick="voteForSubmission(${submission.id})" title="Upvote this prompt">
-                    <i class="fas fa-thumbs-up"></i>
-                </button>
-                <div class="vote-count">${submission.votes || 0}</div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 // Render top 3 section

@@ -5,54 +5,63 @@
 ### 📂 Files Added/Modified:
 - `vercel.json` - Vercel configuration for serverless deployment
 - `dataStore.js` - Persistent file storage system
-- `server.js` - Updated to use persistent storage
+- `api/` folder - Serverless API routes for Vercel
 - `.gitignore` - Added data/ and .vercel directories
 
 ### 🔄 Storage Upgrade:
 - ❌ Before: In-memory storage (data lost on restart)
-- ✅ After: File-based persistent storage (data survives restarts)
+- ✅ After: File-based persistent storage + Vercel API routes
 
-## 🚀 Deployment Steps:
+## 🚀 **After Creating New Project on Vercel:**
 
-### Option 1: Using Vercel CLI (Recommended)
-```bash
-# Install Vercel CLI globally
-npm install -g vercel
+### **Step 1: Import Your GitHub Repository**
+1. On Vercel dashboard, click **"Add New..."** → **"Project"**
+2. Find your repository: **`utkarshrajputt/prompt-battle`**
+3. Click **"Import"**
 
-# Login to Vercel
-vercel login
+### **Step 2: Configure Build Settings**
+Vercel should auto-detect your settings:
 
-# Deploy from project root
-vercel --prod
-```
+- **Framework Preset**: `Other`
+- **Build Command**: Leave empty (or `npm install`)
+- **Output Directory**: Leave empty
+- **Install Command**: `npm install`
+- **Node.js Version**: 18.x (recommended)
 
-### Option 2: Using Vercel Dashboard
-1. Push your code to GitHub
-2. Go to [vercel.com](https://vercel.com)
-3. Import your GitHub repository
-4. Vercel will auto-detect settings and deploy
+### **Step 3: Environment Variables**
+- No environment variables needed for basic setup
+- Click **"Add"** if you need any custom settings later
 
-## 🎯 Post-Deployment:
+### **Step 4: Deploy**
+1. Click **"Deploy"**
+2. Wait for build completion (1-2 minutes)
+3. Get your live URL: `https://prompt-battle-[random].vercel.app`
 
-### ✅ What Works:
-- All submissions are saved persistently
-- Voting system works perfectly
-- CSV export includes all data
-- Auto-restart doesn't lose data
-- Real-time updates work across users
+### **Step 5: Test Your Deployment**
+✅ **Test these features:**
+- Submit a new prompt
+- Vote on prompts
+- Check Top 3 updates automatically
+- Download CSV export
+- Data persists after refresh
 
-### ⚠️ Important Notes:
-- On Vercel, each serverless function runs independently
-- File storage works but has limitations in serverless environment
-- For high-traffic workshops, consider upgrading to Vercel KV or database
+## 🔧 **Troubleshooting:**
 
-### 🔧 If You Need Database Storage:
-Let me know if you want to upgrade to:
-- Vercel KV (Redis) - $$ but more reliable
-- Vercel Postgres - $$$ but most robust
-- Current file storage - Free but has serverless limitations
+### **If API Routes Don't Work:**
+- Check Vercel Function Logs in dashboard
+- Ensure all files are pushed to GitHub
+- Redeploy from Vercel dashboard
 
-## 🌐 Your App Will Be Available At:
-`https://your-project-name.vercel.app`
+### **If Storage Issues:**
+- Vercel serverless has limitations with file storage
+- Consider upgrading to Vercel KV for production use
 
-Ready to deploy? Just run `vercel --prod` in your terminal!
+## 🌐 **Your Workshop URL:**
+After deployment: `https://your-project-name.vercel.app`
+
+## 🎯 **Ready for Your Workshop!**
+✅ Persistent data storage
+✅ Real-time voting system  
+✅ Global accessibility
+✅ Professional URL
+✅ CSV export functionality

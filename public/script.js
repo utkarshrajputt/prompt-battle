@@ -47,7 +47,7 @@ submissionForm.addEventListener('submit', async (e) => {
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
     
     try {
-        const response = await fetch('/submit', {
+        const response = await fetch('/api/submit', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -86,7 +86,7 @@ submissionForm.addEventListener('submit', async (e) => {
 // Load submissions from server
 async function loadSubmissions() {
     try {
-        const response = await fetch('/submissions');
+        const response = await fetch('/api/submissions');
         const data = await response.json();
         
         submissions = data.submissions;
@@ -104,7 +104,7 @@ async function loadSubmissions() {
 // Load top 3 from server
 async function loadTop3() {
     try {
-        const response = await fetch('/top3');
+        const response = await fetch('/api/top3');
         const data = await response.json();
         
         top3 = data.top3;
@@ -118,7 +118,7 @@ async function loadTop3() {
 // Handle voting
 async function voteForSubmission(submissionId) {
     try {
-        const response = await fetch('/vote', {
+        const response = await fetch('/api/vote', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -191,7 +191,7 @@ async function downloadCsv() {
         downloadCsvBtn.disabled = true;
         downloadCsvBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Preparing...';
         
-        const response = await fetch('/download-csv');
+        const response = await fetch('/api/download-csv');
         
         if (response.ok) {
             const blob = await response.blob();
